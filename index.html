@@ -5607,7 +5607,7 @@
 
                 // Assign stable IDs to inputs that don't have one
                 inputs.forEach((input, index) => {
-                    if (!input.id && input.type !== 'file') {
+                    if (!input.id) {
                         // Create a stable ID based on position and parent context
                         const parent = input.closest('section, .form-section, table, .card');
                         const parentId = parent ? (parent.id || parent.className.split(' ')[0]) : 'root';
@@ -5648,6 +5648,13 @@
                     localStorage.setItem('githubFileAssociations', JSON.stringify(associationsObj));
                 }
 
+                // Save table row counts
+                const tableCounts = {};
+                document.querySelectorAll('table[id]').forEach(table => {
+                    tableCounts[table.id] = table.querySelectorAll('tbody tr').length;
+                });
+                localStorage.setItem('tableRowCounts', JSON.stringify(tableCounts));
+
                 // Show save indicator
                 const indicator = document.getElementById('saveIndicator');
                 indicator.classList.add('show');
@@ -5658,11 +5665,40 @@
 
             // Load saved data - tries v3 (ID-based) first, then falls back to v2 (index-based)
             function loadFormData() {
+                // Restore table row (structure) first
+                const savedTableCounts = localStorage.getItem('tableRowCounts');
+                if (savedTableCounts) {
+                    try {
+                        const tableCounts = JSON.parse(savedTableCounts);
+                        Object.keys(tableCounts).forEach(tableId => {
+                            const table = document.getElementById(tableId);
+                            if (table) {
+                                let currentRows = table.querySelectorAll('tbody tr').length;
+                                const savedRows = tableCounts[tableId];
+
+                                // Add rows if needed
+                                while (currentRows < savedRows) {
+                                    addRow(tableId);
+                                    currentRows++;
+                                }
+
+                                // Remove rows if needed
+                                while (currentRows > savedRows) {
+                                    removeRow(tableId);
+                                    currentRows--;
+                                }
+                            }
+                        });
+                    } catch (e) {
+                        console.error("Error restoring table rows:", e);
+                    }
+                }
+
                 const inputs = document.querySelectorAll('input, textarea, select');
 
                 // First, assign stable IDs to inputs (same logic as saveFormData)
                 inputs.forEach((input, index) => {
-                    if (!input.id && input.type !== 'file') {
+                    if (!input.id) {
                         const parent = input.closest('section, .form-section, table, .card');
                         const parentId = parent ? (parent.id || parent.className.split(' ')[0]) : 'root';
                         const siblingIndex = Array.from(input.parentElement.children).indexOf(input);
