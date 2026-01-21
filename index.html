@@ -5639,6 +5639,15 @@
                 });
                 localStorage.setItem('ficheProjetPRAD_v2', JSON.stringify(formDataV2));
 
+                // Save GitHub file associations if they exist
+                if (typeof githubFileAssociations !== 'undefined') {
+                    const associationsObj = {};
+                    githubFileAssociations.forEach((value, key) => {
+                        associationsObj[key] = value;
+                    });
+                    localStorage.setItem('githubFileAssociations', JSON.stringify(associationsObj));
+                }
+
                 // Show save indicator
                 const indicator = document.getElementById('saveIndicator');
                 indicator.classList.add('show');
@@ -8706,6 +8715,19 @@
 
         // Storage for GitHub file associations (field ID -> GitHub filename)
         const githubFileAssociations = new Map();
+
+        // Load saved GitHub file associations from localStorage
+        const savedAssociations = localStorage.getItem('githubFileAssociations');
+        if (savedAssociations) {
+            try {
+                const associationsObj = JSON.parse(savedAssociations);
+                Object.keys(associationsObj).forEach(key => {
+                    githubFileAssociations.set(key, associationsObj[key]);
+                });
+            } catch (e) {
+                console.error('Failed to load GitHub file associations:', e);
+            }
+        }
         let currentSelectionTarget = null; // The upload-wrapper being targeted for file selection
 
         // Create GitHub file selector modal (for selecting files to attach)
