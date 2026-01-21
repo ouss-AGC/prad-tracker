@@ -5556,11 +5556,12 @@
                     newRow.querySelectorAll('.file-list').forEach(list => {
                         list.innerHTML = '';
                     });
-                    // Generate new ID for file input
-                    newRow.querySelectorAll('.file-input').forEach(input => {
-                        input.id = 'file_' + Math.random().toString(36).substr(2, 9);
+                    // Remove IDs to force regeneration of stable IDs
+                    newRow.querySelectorAll('input, select, textarea').forEach(input => {
+                        input.removeAttribute('id');
                     });
                     tbody.appendChild(newRow);
+                    assignStableIds(); // Re-assign stable IDs to everything
                 }
             }
 
@@ -5572,9 +5573,40 @@
 
                 if (rows.length > 1) {
                     rows[rows.length - 1].remove();
+                    assignStableIds(); // Re-assign stable IDs after removal (indices change)
                 } else {
                     alert('Impossible de supprimer la dernière ligne.');
                 }
+            }
+
+            // Assign stable determinist IDs to all inputs based on their position
+            function assignStableIds() {
+                const inputs = document.querySelectorAll('input, textarea, select');
+                inputs.forEach((input, index) => {
+                    // Create a stable ID based on position and parent context
+                    const parent = input.closest('section, .form-section, table, .card');
+                    if (parent) {
+                        const parentId = parent.id || parent.className.split(' ')[0];
+
+                        // For tables, use row/col index for extreme stability
+                        const tr = input.closest('tr');
+                        if (tr) {
+                            const rowIndex = Array.from(tr.parentElement.children).indexOf(tr);
+                            const td = input.closest('td');
+                            const colIndex = td ? Array.from(tr.children).indexOf(td) : 0;
+                            const siblingIndex = Array.from(input.parentElement.children).indexOf(input);
+
+                            // Force set the ID to be structural
+                            input.id = `auto_${parentId}_r${rowIndex}_c${colIndex}_i${siblingIndex}`;
+                            return;
+                        }
+                    }
+
+                    // Fallback for non-table inputs
+                    if (!input.id) {
+                        input.id = `auto_idx_${index}`;
+                    }
+                });
             }
 
             // Add column to table
@@ -5605,16 +5637,7 @@
                 const inputs = document.querySelectorAll('input, textarea, select');
                 const formData = {};
 
-                // Assign stable IDs to inputs that don't have one
-                inputs.forEach((input, index) => {
-                    if (!input.id) {
-                        // Create a stable ID based on position and parent context
-                        const parent = input.closest('section, .form-section, table, .card');
-                        const parentId = parent ? (parent.id || parent.className.split(' ')[0]) : 'root';
-                        const siblingIndex = Array.from(input.parentElement.children).indexOf(input);
-                        input.id = `auto_${parentId}_${index}_${siblingIndex}`;
-                    }
-                });
+                assignStableIds(); // Ensure all IDs are stable before saving
 
                 inputs.forEach((input, index) => {
                     // Use ID if available, otherwise use index as fallback
@@ -5678,7 +5701,18 @@
 
                                 // Add rows if needed
                                 while (currentRows < savedRows) {
-                                    addRow(tableId);
+                                    // Use raw addRow logic without triggering full re-calc yet for speed
+                                    const tbody = table.querySelector('tbody');
+                                    const rows = tbody.querySelectorAll('tr');
+                                    const newRow = rows[0].cloneNode(true);
+                                    newRow.querySelectorAll('input').forEach(input => {
+                                        if (input.type === 'checkbox') input.checked = false;
+                                        else if (input.type !== 'button') input.value = '';
+                                        input.removeAttribute('id');
+                                    });
+                                    newRow.querySelectorAll('select').forEach(s => s.selectedIndex = 0);
+                                    newRow.querySelectorAll('.file-list').forEach(l => l.innerHTML = '');
+                                    tbody.appendChild(newRow);
                                     currentRows++;
                                 }
 
@@ -5694,17 +5728,11 @@
                     }
                 }
 
-                const inputs = document.querySelectorAll('input, textarea, select');
+                // NOW assign stable IDs to everything (including new rows)
+                assignStableIds();
 
-                // First, assign stable IDs to inputs (same logic as saveFormData)
-                inputs.forEach((input, index) => {
-                    if (!input.id) {
-                        const parent = input.closest('section, .form-section, table, .card');
-                        const parentId = parent ? (parent.id || parent.className.split(' ')[0]) : 'root';
-                        const siblingIndex = Array.from(input.parentElement.children).indexOf(input);
-                        input.id = `auto_${parentId}_${index}_${siblingIndex}`;
-                    }
-                });
+                const inputs = document.querySelectorAll('input, textarea, select');
+                // Stable IDs are already assigned by assignStableIds()
 
                 // Try to load v3 format first (ID-based)
                 const savedDataV3 = localStorage.getItem('ficheProjetPRAD_v3');
