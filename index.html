@@ -8728,6 +8728,45 @@
                 console.error('Failed to load GitHub file associations:', e);
             }
         }
+
+        // Helper function to save GitHub associations to localStorage
+        function saveGitHubAssociations() {
+            const associationsObj = {};
+            githubFileAssociations.forEach((value, key) => {
+                associationsObj[key] = value;
+            });
+            localStorage.setItem('githubFileAssociations', JSON.stringify(associationsObj));
+        }
+
+        // Helper to escape filenames for use in HTML attributes
+        function escapeFileName(filename) {
+            return filename.replace(/'/g, "\\'").replace(/"/g, '\\"');
+        }
+
+        // Restore GitHub file associations UI on page load
+        function loadGitHubAssociations() {
+            githubFileAssociations.forEach((filenames, storageKey) => {
+                const fileInput = document.getElementById(storageKey);
+                if (!fileInput) return;
+
+                const fileList = fileInput.closest('.upload-wrapper')?.querySelector('.file-list');
+                if (!fileList) return;
+
+                // Rebuild the file list UI for each associated file
+                filenames.forEach(filename => {
+                    const fileItem = document.createElement('div');
+                    fileItem.className = 'file-item github-linked-file';
+                    fileItem.innerHTML = `
+                        <span class="file-name github-file-link" title="${filename}" onclick="viewGitHubFile('${escapeFileName(filename)}')">
+                            <span style="color: #28a745;">📁</span> ${filename}
+                        </span>
+                        <span class="file-remove" onclick="removeGitHubFileAssociation(this, '${storageKey}', '${escapeFileName(filename)}')">×</span>
+                    `;
+                    fileList.appendChild(fileItem);
+                });
+            });
+        }
+
         let currentSelectionTarget = null; // The upload-wrapper being targeted for file selection
 
         // Create GitHub file selector modal (for selecting files to attach)
