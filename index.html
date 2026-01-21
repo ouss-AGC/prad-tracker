@@ -9061,11 +9061,23 @@
             const fileInput = wrapper.querySelector('.file-input');
             const storageKey = fileInput.id;
 
+            // DEBUGGING: Remove after fix
+            const debugInfo = [];
+            githubFileAssociations.forEach((v, k) => debugInfo.push(k + ' (' + v.length + ')'));
+            alert(`DEBUG VIEW:\nClicked ID: ${storageKey}\nMap Size: ${githubFileAssociations.size}\nKeys in Map: ${debugInfo.join(', ')}\nHas Match: ${githubFileAssociations.has(storageKey)}`);
+
             // Priority 1: GitHub Linked Files
-            const associations = githubFileAssociations.get(storageKey) || [];
-            if (associations.length > 0) {
-                viewGitHubLinkedFiles(button);
-                return;
+            if (githubFileAssociations.has(storageKey)) {
+                // Direct match found
+                const files = githubFileAssociations.get(storageKey);
+                if (files && files.length > 0) {
+                    viewGitHubLinkedFiles(button);
+                    return;
+                }
+            } else {
+                // Try fallback for loose ID matching (randomness issues?)
+                // If we find an association that ends with the same indices...
+                // But normally stable IDs should match perfectly now.
             }
 
             // Priority 2: Local Storage Files
@@ -9078,6 +9090,7 @@
             }
 
             // If neither exists
+            // alert(`Debug: No files found for ID ${storageKey}`);
             showNotification('Aucun document joint à visualiser.', 'info');
         };
 
