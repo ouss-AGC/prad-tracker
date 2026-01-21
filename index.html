@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fiche de Description et de Suivi d'Avancement de Projet PRAD A12P1 (v2.0)</title>
+    <title>Fiche de Description et de Suivi d'Avancement de Projet PRAD A12P1 (v2.1)</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -773,8 +773,7 @@
             pointer-events: none;
         }
 
-        /* Keep view and download buttons visible */
-        body.readonly-mode .view-btn,
+        /* Keep download buttons visible */
         body.readonly-mode .print-btn,
         body.readonly-mode .full-export-btn,
         body.readonly-mode .gantt-export-controls {
@@ -794,8 +793,10 @@
         }
 
 
+
         /* Force hide the view button as per user request (files are clickable directly) */
-        .view-btn {
+        .view-btn,
+        body.readonly-mode .view-btn {
             display: none !important;
         }
 
