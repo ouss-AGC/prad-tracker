@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fiche de Description et de Suivi d'Avancement de Projet PRAD A12P1</title>
+    <title>Fiche de Description et de Suivi d'Avancement de Projet PRAD A12P1 (v2.0)</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -791,6 +791,12 @@
             border-radius: 8px;
             cursor: pointer;
             transition: all 0.3s;
+        }
+
+
+        /* Force hide the view button as per user request (files are clickable directly) */
+        .view-btn {
+            display: none !important;
         }
 
         .pin-submit:hover {
@@ -5238,59 +5244,13 @@
             let currentFileIndex = 0;
             let currentFiles = [];
 
+
+            // viewFiles is deprecated and hidden. Files are opened by clicking their name.
             function viewFiles(button) {
-                const wrapper = button.closest('.upload-wrapper');
-                const fileInput = wrapper.querySelector('.file-input');
-                const storageKey = fileInput.id;
-                const storedFiles = fileStorage.get(storageKey);
-
-                currentStorageKey = storageKey;
-                currentFiles = storedFiles ? storedFiles.filter(f => f !== null) : [];
-                currentFileIndex = 0;
-
-                const modal = document.getElementById('fileViewerModal');
-                const modalBody = document.getElementById('modalBody');
-                const fileListContent = document.getElementById('fileListContent');
-
-                // Hide navigation buttons initially
-                document.getElementById('downloadCurrentBtn').style.display = 'none';
-                document.getElementById('prevFileBtn').style.display = 'none';
-                document.getElementById('nextFileBtn').style.display = 'none';
-
-                if (!currentFiles || currentFiles.length === 0) {
-                    modalBody.innerHTML = '<div style="display: flex; justify-content: center; align-items: center; height: 100%; color: #666;"><p>Aucun document joint. Utilisez le bouton "Joindre" pour ajouter des fichiers.</p></div>';
-                    fileListContent.innerHTML = '<p style="color: #666; font-size: 0.9rem;">Aucun fichier</p>';
-                } else {
-                    // Build file list sidebar
-                    let listHtml = '';
-                    currentFiles.forEach((file, index) => {
-                        if (file) {
-                            const icon = getFileIcon(file.name);
-                            listHtml += `
-                            <div id="fileItem_${index}" style="display: flex; align-items: center; gap: 10px; padding: 10px; margin-bottom: 8px; background: white; border-radius: 8px; cursor: pointer; border: 2px solid ${index === 0 ? '#2196f3' : 'transparent'};" onclick="showFileInModal(${index})">
-                                <span style="font-size: 1.5rem;">${icon}</span>
-                                <div style="overflow: hidden;">
-                                    <div style="font-weight: 600; color: #1a3a5c; font-size: 0.85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${file.name}</div>
-                                    <div style="font-size: 0.75rem; color: #666;">${formatFileSize(file.size)}</div>
-                                </div>
-                            </div>
-                        `;
-                        }
-                    });
-                    fileListContent.innerHTML = listHtml;
-
-                    // Show first file
-                    showFileInModal(0);
-
-                    // Show navigation buttons if multiple files
-                    if (currentFiles.length > 1) {
-                        document.getElementById('prevFileBtn').style.display = 'inline-block';
-                        document.getElementById('nextFileBtn').style.display = 'inline-block';
-                    }
-                }
-
-                modal.style.display = 'block';
+                console.log('viewFiles is deprecated');
             }
+
+
 
             function showFileInModal(index) {
                 if (!currentFiles || index < 0 || index >= currentFiles.length) return;
