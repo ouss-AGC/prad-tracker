@@ -5615,6 +5615,11 @@
                 });
                 localStorage.setItem('tableRowCounts', JSON.stringify(tableCounts));
 
+                // Save Gantt milestones (date bars)
+                if (typeof milestones !== 'undefined') {
+                    localStorage.setItem('ganttMilestones', JSON.stringify(milestones));
+                }
+
                 // Show save indicator
                 const indicator = document.getElementById('saveIndicator');
                 indicator.classList.add('show');
@@ -5710,6 +5715,23 @@
                         }
                     });
                     console.log('Loaded data from v2 format (legacy)');
+                }
+
+                // Load Gantt milestones
+                const savedMilestones = localStorage.getItem('ganttMilestones');
+                if (savedMilestones) {
+                    try {
+                        const parsedMilestones = JSON.parse(savedMilestones);
+                        if (Array.isArray(parsedMilestones) && parsedMilestones.length > 0) {
+                            milestones = parsedMilestones;
+                            setTimeout(() => {
+                                if (typeof renderMilestoneList === 'function') renderMilestoneList();
+                                if (typeof renderMilestoneLines === 'function') renderMilestoneLines();
+                            }, 100);
+                        }
+                    } catch (e) {
+                        console.error("Error loading milestones:", e);
+                    }
                 }
             }
 
@@ -6232,19 +6254,22 @@
                 return null;
             }
 
-            // Initialize with one default milestone
+            // Initialize with one default milestone ONLY IF none exist
             window.addEventListener('load', function () {
-                // Add a default evaluation meeting line
+                // Add a default evaluation meeting line only if no milestones exist (loaded from storage)
                 setTimeout(() => {
-                    addMilestone();
-                    // Set default date to January 2025
-                    if (milestones.length > 0) {
-                        milestones[0].name = 'Réunion d\'Évaluation Trimestrielle';
-                        milestones[0].date = '2025-01-15';
-                        renderMilestoneList();
-                        renderMilestoneLines();
+                    // Check if milestones were loaded from storage (length > 0)
+                    if (!milestones || milestones.length === 0) {
+                        addMilestone();
+                        // Set default date to January 2025
+                        if (milestones.length > 0) {
+                            milestones[0].name = 'Réunion d\'Évaluation Trimestrielle';
+                            milestones[0].date = '2025-01-15';
+                            renderMilestoneList();
+                            renderMilestoneLines();
+                        }
                     }
-                }, 100);
+                }, 500);
             });
 
             // Re-render lines on scroll
