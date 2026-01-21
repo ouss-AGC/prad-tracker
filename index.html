@@ -9062,11 +9062,13 @@
 
         // Initialize GitHub integration on page load
         document.addEventListener('DOMContentLoaded', function () {
+            loadFormData(); // Load saved form data first
             createGitHubFilesBrowser();
             createGitHubFileSelector();
             setTimeout(loadGitHubAssociations, 500); // Load after other initializations
         });
         if (document.readyState !== 'loading') {
+            loadFormData();
             createGitHubFilesBrowser();
             createGitHubFileSelector();
             setTimeout(loadGitHubAssociations, 500);
